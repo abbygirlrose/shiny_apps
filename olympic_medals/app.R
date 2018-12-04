@@ -42,6 +42,10 @@ col <- c(colnames(olympic))
 ui <- fluidPage(h1("Olympic Medals"),
                 sidebarLayout(
                   sidebarPanel(
+                    selectInput(inputId = "Filter",
+                                label = "Select Filters",
+                                choices = col,
+                                multiple = TRUE),
                 sliderInput(inputId = "Year", 
                             label = "Select Year",
                             min = min(olympic$Year),
@@ -56,7 +60,7 @@ ui <- fluidPage(h1("Olympic Medals"),
                             multiple = FALSE),
                 radioButtons("Gender", "Select Gender",
                              choices = sort(unique(olympic$Gender))),
-                radioButtons("Season", "Select Season`",
+                radioButtons("Season", "Select Season",
                              choices = sort(unique(olympic$Season)))
                 ),
                 mainPanel(plotOutput("medalsPlot"))))
@@ -68,12 +72,18 @@ server <- function(input, output) {
         Season == input$Season,
         # filter by hourly wage
         Year >= input$Year[[1]],
-        Year <= input$Year[[2]]
+        Year <= input$Year[[2]], 
+        #filter by country
+        Country == input$Country,
+        Gender == input$Gender
       )    
   })
   output$medalsPlot <- renderPlot({
-      ggplot(medal_filter(), aes(Year)) +
-      geom_histogram()
+      ggplot(medal_filter(), aes(Year, color = Medal, fill = Medal)) +
+      geom_histogram()+
+      labs(y = "Number of Medals") +
+      scale_color_manual(values=c("#cd7f32", "#E69F00", "#999999")) + #make colors Bronze, Silver, Gold
+      scale_fill_manual(values=c( "#cd7f32","#E69F00",  "#999999"))
   })
   
 }
