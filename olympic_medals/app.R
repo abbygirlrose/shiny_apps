@@ -7,11 +7,11 @@ library(dplyr)
 library(shinythemes)
 library(tidyr)
 library(rsconnect)
-summer <- read_csv("../summer.csv")%>%
+summer <- read_csv("summer.csv")%>%
   mutate(Season= "Summer")
-winter <- read_csv("../winter.csv")%>%
+winter <- read_csv("winter.csv")%>%
   mutate(Season = "Winter")
-dictionary <- read_csv("../dictionary.csv")
+
 
 olympic <- bind_rows(summer, winter)%>%
   select(Year, Sport, Country, Gender, Medal, Season) 
@@ -59,9 +59,9 @@ server <- function(input, output) {
   output$medalsPlot <- renderPlot({
       ggplot(medal_filter(), aes(Year, color = Medal, fill = Medal)) +
       geom_histogram()+
-      labs(y = "Number of Medals") +
+      labs(y = "Number of Medals", title = "Number of Medals by Year") +
       scale_color_manual(values=c("#cd7f32", "#E69F00", "#999999")) + #make colors Bronze, Silver, Gold
-      scale_fill_manual(values=c( "#cd7f32","#E69F00",  "#999999"))
+      scale_fill_manual(values=c( "#cd7f32","#E69F00",  "#999999")) 
     })
   output$medalsTable <- renderTable({
     medal_filter()%>%
@@ -89,6 +89,6 @@ server <- function(input, output) {
                 choices = sort(unique(medals$Sport)),
                 multiple = FALSE)
   })
-    
+  
 }
 shinyApp(ui = ui, server = server)
