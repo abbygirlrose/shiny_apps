@@ -14,7 +14,8 @@ library(lubridate)
 library(shinythemes)
 library(rsconnect)
 library(leaflet)
-  
+
+#get water temp data
 santamonicapier <- read_html("http://www.surf-forecast.com/breaks/Santa-Monic-Pier/seatemp")
 smp_temp <- html_nodes(santamonicapier, css = "b .temp") %>%
   html_text()%>%
@@ -81,49 +82,59 @@ dock_temp <- html_nodes(dock, css = "b .temp") %>%
   as.numeric() %>%
   as.data.frame()
 
+#make temp vector
 temp_vector <- c(smp_temp, smop_temp, venicebw_temp, venicep_temp, mb_temp, wr_temp, zuma_temp, cab_temp, es_temp, malibu_temp, dock_temp)%>%
   as.vector()
 
+#make beach name vector
 beach <- c("Santa Monica Pier", "Santa Monica Ocean Park", "Venice Break Water", "Venice Pier", "Manhattan Beach", "Will Rogers", "Zuma", "Cabrillo", "El Segundo", "Malibu", "Dockweiler")
 
 beach1 <- c("Santa Monica Pier", "Santa Monica Ocean Park", "Venice Break Water", "Venice Pier", "Manhattan Beach", "Will Rogers", "Zuma", "Cabrillo", "El Segundo", "Malibu", "Dockweiler")%>%
   as.character()%>%
   as.data.frame()
 
+#make latitude vector->df
 lat <- c(-118.496573, -118.487819, -118.476588, -118.469692, -118.413228, -118.539843, -118.822407, -118.283379, -118.427079, -118.656931, -118.436952)%>%
   as.data.frame()
 
+#make longitude vector->df
 long <- c(34.008435, 34.000065, 33.985374, 33.977486, 33.883766, 34.036400,34.014107, 33.708509, 33.911477,34.038464, 33.929901) %>%
   as.data.frame()
 
+#change column names
 colnames(long) <- c("long")
 colnames(lat) <- c("lat")
 colnames(beach1) <- c("Beach")
 
+#make location df
 location <- bind_cols(beach1, lat, long)
 
 water_temp <- bind_rows(smp_temp, smop_temp, venicebw_temp, venicep_temp, mb_temp, wr_temp, zuma_temp, cab_temp, es_temp, malibu_temp, dock_temp)
 
 colnames(water_temp) <- c("TemperatureC")
 
+#make df and convert tempC to tempF
 water_temp <- water_temp %>%
   mutate(Beach = beach)%>%
   mutate(TemperatureC = as.numeric(TemperatureC)) %>%
   mutate(TemperatureF = (TemperatureC * 9/5)+32)
 
+#make full df
 full_temp <- left_join(water_temp, location, by = "Beach")
 
+#make df with names and temps
 vector_temp <- full_temp %>%
   select(Beach, TemperatureF) %>%
   unite(loc_temp, sep = " ")
- 
+
+#turn it into vectors 
 vector_temp <- vector_temp[['loc_temp']]
 
 temp_vec <- water_temp[['TemperatureF']]%>%
   as.character()%>%
   as.data.frame()
 
-
+#get water quality data
 grade <- read_html("http://publichealth.lacounty.gov/phcommon/public/eh/water_quality/beach_grades.cfm")
 grades <- html_nodes(grade, css = "br:nth-child(3)~ p") %>%
   html_text() %>%
