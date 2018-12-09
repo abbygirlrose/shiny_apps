@@ -137,9 +137,15 @@ temp_vec <- water_temp[['TemperatureF']]%>%
 #get water quality data
 grade <- read_html("http://publichealth.lacounty.gov/phcommon/public/eh/water_quality/beach_grades.cfm")
 grades <- html_nodes(grade, css = "br:nth-child(3)~ p") %>%
-  html_text() %>%
+  html_text() 
+
+grades1 <- grades%>%
   as.data.frame()
 
+grade_char <- grades %>%
+  as.character()
+
+grade_count <- sapply(strsplit(grade_char, " "), length)
 
 ui <- fluidPage(theme = shinytheme("cerulean"),
    titlePanel("Can I Swim Today?"),
@@ -253,8 +259,8 @@ server <- function(input, output){
       addMarkers(map_filter()$lat, map_filter()$long, popup = vector_temp)
   })
   output$rain <- renderText({
-    if(grades == "An Ocean Water Quality Rain Advisory has been declared for all Los Angeles County beaches.  The advisory will be in effect at least until 7:00 am, Sunday December 9, 2018.  Beach users are cautioned to avoid water contact for at least 72 hours after significant rainfall.  This advisory may be extended depending upon further rainfall.\r\n\t\t\t\t"){
-      "There is a rain advisory for Los Angeles County, wait 72 hours to swim."
+    if(grade_count > 25){
+      "There is a rain advisory for Los Angeles County, wait 72 hours after rain to swim."
     }else{
       "There is no rain advisory."
     }
